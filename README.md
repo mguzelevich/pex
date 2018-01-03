@@ -1,9 +1,26 @@
-# postgres schema exporter
+# PEx [![GoDoc](https://godoc.org/github.com/mguzelevich/pex?status.svg)](http://godoc.org/github.com/mguzelevich/pex) [![Build Status](https://travis-ci.org/mguzelevich/pex.svg?branch=master)](https://travis-ci.org/mguzelevich/pex)
 
 postgres schema exporter
+
+
+## instalation
+
+```
+go get -u github.com/mguzelevich/pex/cmd/...
+```
+
+## build
+
+```
+go build github.com/mguzelevich/pex/cmd/...
+```
 
 ## usage
 
 ```
-$ GOPATH=`pwd` go build github.com/mguzelevich/pex/cmd/... && echo "dbname=<DBNAME> sslmode=disable" | ./pex   
+$ echo "dbname=<DBNAME> sslmode=disable" | ./pex
+```
+
+```
+$ echo "dbname=<DBNAME> sslmode=disable" | ./pex -f dot | dot -Tpng > /tmp/databases.png && pqiv /tmp/databases.png
 ```

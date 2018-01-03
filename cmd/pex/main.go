@@ -2,12 +2,18 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"os"
+	"strings"
 
 	_ "github.com/lib/pq"
 
 	"github.com/mguzelevich/pex"
+)
+
+var (
+	outputFormat string
 )
 
 func readData() ([]string, error) {
@@ -29,6 +35,18 @@ func readData() ([]string, error) {
 	return result, nil
 }
 
+func extractDbName(conn string) string {
+	dbname := ""
+	for _, param := range strings.Split(conn, " ") {
+		pair := strings.Split(param, "=")
+		if pair[0] == "dbname" {
+			dbname = pair[1]
+			break
+		}
+	}
+	return dbname
+}
+
 func wrapSchemas(schemas []string) []string {
 	result := []string{}
 	for _, s := range schemas {
@@ -37,8 +55,16 @@ func wrapSchemas(schemas []string) []string {
 	return result
 }
 
+func init() {
+	flag.StringVar(&outputFormat, "f", "markdown", "output format (markdown, dot, ...)")
+	flag.StringVar(&outputFormat, "out-format", "markdown", "output format (markdown, dot, ...)")
+}
+
 func main() {
-	databases := []*pex.Database{}
+	flag.Parse()
+
+	databases := pex.Databases{}
+	extractors := map[*pex.Extractor]*pex.Database{}
 	if connections, err := readData(); err != nil {
 		fmt.Fprintf(os.Stderr, "err: %v\n", err)
 		os.Exit(1)
@@ -47,17 +73,19 @@ func main() {
 			if tmp := fmt.Sprintf("%03d [%s]\n", i, conn); tmp == "" {
 				fmt.Fprintf(os.Stderr, "%03d [%s]\n", i, conn)
 			}
-
-			d := pex.NewDatabase(conn)
-			databases = append(databases, d)
+			extractors[pex.NewExtractor(conn)] = pex.NewDatabase(extractDbName(conn))
 		}
 	}
 
-	for i, db := range databases {
-		if err := db.Serve(); err != nil {
+	i := 1
+	for e, db := range extractors {
+		if err := e.Serve(db); err != nil {
 			fmt.Fprintf(os.Stderr, "%d err: %v\n", i, err)
 		} else {
-			db.Out()
+			databases = append(databases, db)
 		}
+		i++
 	}
+
+	fmt.Fprintf(os.Stdout, pex.Out(outputFormat, databases))
 }
