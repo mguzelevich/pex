@@ -168,5 +168,6 @@ func init() {
 	skippable = map[string]bool{
 		"goose_db_version": true,
 		"_part_[0-9]+":     true,
+		"spatial_ref_sys":  true,
 	}
 }
