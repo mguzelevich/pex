@@ -22,5 +22,9 @@ $ echo "dbname=<DBNAME> sslmode=disable" | ./pex
 ```
 
 ```
+$ echo "dbname=<DBNAME>  user=<USER> password=<PASSWD> host=<HOST> sslmode=disable" | ./pex
+```
+
+```
 $ echo "dbname=<DBNAME> sslmode=disable" | ./pex -f dot | dot -Tpng > /tmp/databases.png && pqiv /tmp/databases.png
 ```
